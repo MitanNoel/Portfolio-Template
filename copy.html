@@ -1,0 +1,1706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fullstack Developer Portfolio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            overflow: hidden;
+            background: #000;
+        }
+
+        #renderCanvas {
+            width: 100%;
+            height: 100vh;
+            display: block;
+            touch-action: none;
+        }
+
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 3rem;
+            z-index: 1000;
+            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        nav.visible {
+            opacity: 1;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .logo-icon {
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: #fff;
+        }
+
+        .nav-links a.active::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 2px;
+        }
+
+        .hero-content {
+            position: fixed;
+            top: 50%;
+            left: 8%;
+            transform: translateY(-50%);
+            z-index: 100;
+            max-width: 600px;
+            opacity: 0;
+            transition: opacity 1.5s ease;
+        }
+
+        .hero-content.visible {
+            opacity: 1;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(102, 126, 234, 0.15);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 20px;
+            color: #a5b4fc;
+            font-size: 0.85rem;
+            margin-bottom: 2rem;
+        }
+
+        .badge::before {
+            content: '✦';
+            font-size: 1rem;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+        }
+
+        h1 .gradient-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: rgba(255,255,255,0.6);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(102, 126, 234, 0.6);
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                padding: 1rem 1.5rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero-content {
+                left: 5%;
+                right: 5%;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+        }
+
+        #transition-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 1s ease;
+            z-index: 999;
+        }
+
+        #transition-overlay.active {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">
+            <span>John Doe</span>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#home" class="active">Home</a></li>
+            <li><a href="#about">About me</a></li>
+            <li><a href="#skills">Skills</a></li>
+            <li><a href="#projects">Projects</a></li>
+            <li><a href="#source">Source Code</a></li>
+        </ul>
+    </nav>
+
+    <div id="transition-overlay"></div>
+    <canvas id="renderCanvas"></canvas>
+
+    <div class="hero-content">
+        <div class="badge">Fullstack Developer Portfolio</div>
+        <h1>
+            Providing <span class="gradient-text">the best</span><br>
+            project experience.
+        </h1>
+        <p class="subtitle">
+            I'm a Full Stack Software Engineer with experience in Website, Mobile,<br>
+            and Software development. Check out my projects and skills.
+        </p>
+        <button class="cta-button" id="learnMoreBtn">Learn more</button>
+    </div>
+
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    <script>
+        let currentSection = 'home';
+        const canvas = document.getElementById('renderCanvas');
+        const engine = new BABYLON.Engine(canvas, true, { 
+            antialias: true,
+            preserveDrawingBuffer: true,
+            stencil: true,
+            powerPreference: 'high-performance'
+        });
+        engine.setHardwareScalingLevel(1 / window.devicePixelRatio);
+
+        const createScene = () => {
+            const scene = new BABYLON.Scene(engine);
+            scene.clearColor = new BABYLON.Color4(0.01, 0.01, 0.03, 1);
+            
+            scene.imageProcessingConfiguration.exposure = 1.2;
+            scene.imageProcessingConfiguration.contrast = 1.4;
+            scene.imageProcessingConfiguration.toneMappingEnabled = true;
+            scene.imageProcessingConfiguration.toneMappingType = BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;
+
+            const camera = new BABYLON.ArcRotateCamera(
+                "camera",
+                Math.PI / 2,
+                Math.PI / 2.5,
+                15,
+                new BABYLON.Vector3(0, 0, 0),
+                scene
+            );
+            camera.lowerRadiusLimit = 20;
+            camera.upperRadiusLimit = 400;
+            camera.panningSensibility = 0;
+            camera.wheelPrecision = 100;
+            camera.minZ = 0.1;
+            camera.maxZ = 10000;
+
+            const introAnimation = new BABYLON.Animation(
+                "cameraIntro",
+                "radius",
+                60,
+                BABYLON.Animation.ANIMATIONTYPE_FLOAT,
+                BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+            );
+
+            const introKeys = [
+                { frame: 0, value: 15 },
+                { frame: 300, value: 150 }
+            ];
+            introAnimation.setKeys(introKeys);
+
+            const easingFunction = new BABYLON.QuarticEase();
+            easingFunction.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
+            introAnimation.setEasingFunction(easingFunction);
+
+            camera.animations.push(introAnimation);
+            scene.beginAnimation(camera, 0, 300, false, 1, () => {
+                document.querySelector('nav').classList.add('visible');
+                document.querySelector('.hero-content').classList.add('visible');
+            });
+
+            camera.detachControl(canvas);
+            setTimeout(() => {
+                camera.attachControl(canvas, true);
+            }, 5000);
+
+            const ambientLight = new BABYLON.HemisphericLight(
+                "ambient",
+                new BABYLON.Vector3(0, 1, 0),
+                scene
+            );
+            ambientLight.intensity = 0.15;
+            ambientLight.diffuse = new BABYLON.Color3(0.5, 0.6, 0.8);
+            ambientLight.groundColor = new BABYLON.Color3(0.1, 0.1, 0.15);
+
+            const sunLight = new BABYLON.PointLight(
+                "sunLight",
+                new BABYLON.Vector3(0, 0, 0),
+                scene
+            );
+            sunLight.intensity = 100;
+            sunLight.diffuse = new BABYLON.Color3(1, 0.95, 0.8);
+            sunLight.specular = new BABYLON.Color3(1, 0.95, 0.8);
+            sunLight.range = 500;
+            
+            const shadowGenerator = new BABYLON.ShadowGenerator(1024, sunLight);
+            shadowGenerator.useBlurExponentialShadowMap = true;
+            shadowGenerator.blurKernel = 32;
+            shadowGenerator.darkness = 0.5;
+            shadowGenerator.depthScale = 50;
+
+            const rimLight = new BABYLON.DirectionalLight(
+                "rimLight",
+                new BABYLON.Vector3(1, -0.5, 0.5),
+                scene
+            );
+            rimLight.intensity = 0.3;
+            rimLight.diffuse = new BABYLON.Color3(0.6, 0.7, 1);
+            rimLight.specular = new BABYLON.Color3(0.4, 0.5, 0.8);
+
+            const glowLayer = new BABYLON.GlowLayer("glow", scene, {
+                mainTextureFixedSize: 512,
+                blurKernelSize: 32
+            });
+            glowLayer.intensity = 1.0;
+            glowLayer.blurKernelSize = 32;
+
+            const pipeline = new BABYLON.DefaultRenderingPipeline(
+                "defaultPipeline",
+                true,
+                scene,
+                [camera]
+            );
+            
+            pipeline.fxaaEnabled = true;
+            pipeline.samples = 2;
+            
+            pipeline.bloomEnabled = true;
+            pipeline.bloomThreshold = 0.5;
+            pipeline.bloomWeight = 0.2;
+            pipeline.bloomKernel = 32;
+            pipeline.bloomScale = 0.5;
+            
+            pipeline.chromaticAberrationEnabled = false;
+            pipeline.depthOfFieldEnabled = false;
+            pipeline.grainEnabled = false;
+
+            scene.shadowGenerator = shadowGenerator;
+
+            createConstellationStars(scene);
+
+            createStarfield(scene);
+
+            const solarSystemData = createSolarSystem(scene);
+
+            createAsteroidBelt(scene);
+
+            createParticles(scene);
+
+            scene.registerBeforeRender(() => {
+                if (currentSection === 'home') {
+                    camera.alpha += 0.0002;
+                }
+            });
+
+            return { scene, camera, solarSystem: solarSystemData };
+        };
+
+        function createStarfield(scene) {
+            const starCount = 500;
+            const positions = [];
+            const colors = [];
+
+            for (let i = 0; i < starCount; i++) {
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                const radius = 80 + Math.random() * 120;
+
+                positions.push(
+                    radius * Math.sin(phi) * Math.cos(theta),
+                    radius * Math.sin(phi) * Math.sin(theta),
+                    radius * Math.cos(phi)
+                );
+
+                const brightness = 0.3 + Math.random() * 0.7;
+                colors.push(brightness, brightness, brightness + 0.2, 1);
+            }
+
+            const starSystem = new BABYLON.PointsCloudSystem("stars", 2, scene);
+            starSystem.addPoints(starCount, (particle, i) => {
+                particle.position = new BABYLON.Vector3(
+                    positions[i * 3],
+                    positions[i * 3 + 1],
+                    positions[i * 3 + 2]
+                );
+                particle.color = new BABYLON.Color4(
+                    colors[i * 4],
+                    colors[i * 4 + 1],
+                    colors[i * 4 + 2],
+                    colors[i * 4 + 3]
+                );
+            });
+            starSystem.buildMeshAsync();
+
+            return starSystem;
+        }
+
+        function createConstellationStars(scene) {
+            const constellations = {
+                'Orion': [
+                    { name: 'Betelgeuse', ra: 5.919, dec: 7.407, mag: 0.5 },
+                    { name: 'Rigel', ra: 5.242, dec: -8.202, mag: 0.1 },
+                    { name: 'Bellatrix', ra: 5.418, dec: 6.350, mag: 1.6 },
+                    { name: 'Mintaka', ra: 5.533, dec: -0.299, mag: 2.2 },
+                    { name: 'Alnilam', ra: 5.603, dec: -1.202, mag: 1.7 },
+                    { name: 'Alnitak', ra: 5.679, dec: -1.943, mag: 1.8 },
+                    { name: 'Saiph', ra: 5.796, dec: -9.669, mag: 2.1 }
+                ],
+                'Ursa Major': [
+                    { name: 'Dubhe', ra: 11.062, dec: 61.751, mag: 1.8 },
+                    { name: 'Merak', ra: 11.031, dec: 56.382, mag: 2.4 },
+                    { name: 'Phecda', ra: 11.897, dec: 53.695, mag: 2.4 },
+                    { name: 'Megrez', ra: 12.257, dec: 57.033, mag: 3.3 },
+                    { name: 'Alioth', ra: 12.900, dec: 55.960, mag: 1.8 },
+                    { name: 'Mizar', ra: 13.399, dec: 54.925, mag: 2.0 },
+                    { name: 'Alkaid', ra: 13.792, dec: 49.313, mag: 1.9 }
+                ],
+                'Cassiopeia': [
+                    { name: 'Schedar', ra: 0.675, dec: 56.537, mag: 2.2 },
+                    { name: 'Caph', ra: 0.153, dec: 59.150, mag: 2.3 },
+                    { name: 'Cih', ra: 0.945, dec: 60.717, mag: 2.5 },
+                    { name: 'Ruchbah', ra: 1.430, dec: 60.235, mag: 2.7 },
+                    { name: 'Segin', ra: 1.911, dec: 63.670, mag: 3.4 }
+                ],
+                'Crux': [
+                    { name: 'Acrux', ra: 12.443, dec: -63.099, mag: 0.8 },
+                    { name: 'Mimosa', ra: 12.795, dec: -59.689, mag: 1.3 },
+                    { name: 'Gacrux', ra: 12.519, dec: -57.113, mag: 1.6 },
+                    { name: 'Delta Crucis', ra: 12.253, dec: -58.749, mag: 2.8 }
+                ]
+            };
+
+            const constellationColors = {
+                'Orion': new BABYLON.Color3(0.9, 0.95, 1),
+                'Ursa Major': new BABYLON.Color3(0.8, 0.9, 1),
+                'Cassiopeia': new BABYLON.Color3(1, 0.9, 0.85),
+                'Crux': new BABYLON.Color3(0.95, 0.85, 1)
+            };
+
+            Object.keys(constellations).forEach(constName => {
+                const stars = constellations[constName];
+                const color = constellationColors[constName];
+
+                stars.forEach((star, index) => {
+                    const raRad = (star.ra / 24) * 2 * Math.PI;
+                    const decRad = (star.dec / 180) * Math.PI;
+                    const radius = 150;
+
+                    const x = radius * Math.cos(decRad) * Math.cos(raRad);
+                    const y = radius * Math.sin(decRad);
+                    const z = radius * Math.cos(decRad) * Math.sin(raRad);
+
+                    const size = 0.3 + (3 - star.mag) * 0.15;
+
+                    const starMesh = BABYLON.MeshBuilder.CreateSphere(star.name, {
+                        diameter: size,
+                        segments: 8
+                    }, scene);
+                    starMesh.position = new BABYLON.Vector3(x, y, z);
+
+                    const starMaterial = new BABYLON.PBRMaterial(star.name + "Mat", scene);
+                    starMaterial.emissiveColor = color;
+                    starMaterial.disableLighting = true;
+                    starMaterial.emissiveIntensity = 1.5;
+                    starMesh.material = starMaterial;
+
+                    const twinkleOffset = Math.random() * Math.PI * 2;
+                    scene.registerBeforeRender(() => {
+                        const twinkle = 0.7 + Math.sin(Date.now() * 0.001 + twinkleOffset) * 0.3;
+                        starMaterial.emissiveColor = new BABYLON.Color3(
+                            color.r * twinkle,
+                            color.g * twinkle,
+                            color.b * twinkle
+                        );
+                    });
+                });
+
+                const points = stars.map(star => {
+                    const raRad = (star.ra / 24) * 2 * Math.PI;
+                    const decRad = (star.dec / 180) * Math.PI;
+                    const radius = 150;
+                    return new BABYLON.Vector3(
+                        radius * Math.cos(decRad) * Math.cos(raRad),
+                        radius * Math.sin(decRad),
+                        radius * Math.cos(decRad) * Math.sin(raRad)
+                    );
+                });
+
+                if (constName === 'Orion') {
+                    const lines1 = BABYLON.MeshBuilder.CreateLines(constName + "Lines1", {
+                        points: [points[0], points[2], points[3], points[4], points[5], points[6]]
+                    }, scene);
+                    lines1.color = new BABYLON.Color3(color.r * 0.5, color.g * 0.5, color.b * 0.5);
+                    lines1.alpha = 0.4;
+
+                    const lines2 = BABYLON.MeshBuilder.CreateLines(constName + "Lines2", {
+                        points: [points[1], points[6]]
+                    }, scene);
+                    lines2.color = new BABYLON.Color3(color.r * 0.5, color.g * 0.5, color.b * 0.5);
+                    lines2.alpha = 0.4;
+                } else if (constName === 'Cassiopeia') {
+                    const lines = BABYLON.MeshBuilder.CreateLines(constName + "Lines", {
+                        points: points
+                    }, scene);
+                    lines.color = new BABYLON.Color3(color.r * 0.5, color.g * 0.5, color.b * 0.5);
+                    lines.alpha = 0.4;
+                } else {
+                    const lines = BABYLON.MeshBuilder.CreateLines(constName + "Lines", {
+                        points: points
+                    }, scene);
+                    lines.color = new BABYLON.Color3(color.r * 0.5, color.g * 0.5, color.b * 0.5);
+                    lines.alpha = 0.4;
+                }
+            });
+        }
+
+        function createSolarSystem(scene) {
+            const solarSystem = new BABYLON.TransformNode("solarSystem", scene);
+
+            const EARTH_ORBIT_TIME = 60;
+            const EARTH_DAY_TIME = 10;
+            
+            const planetsData = [
+                ['Sun', 10, 0, [1, 0.9, 0.4], 0, 648, false],
+                ['Mercury', 0.38, 5, [0.7, 0.6, 0.5], 88, 1407.6, false],
+                ['Venus', 0.95, 7, [0.9, 0.8, 0.5], 225, -5832, false],
+                ['Earth', 1.0, 10, [0.2, 0.5, 0.9], 365, 24, false],
+                ['Mars', 0.53, 15, [0.9, 0.4, 0.2], 687, 24.6, false],
+                ['Jupiter', 11.2, 52, [0.8, 0.7, 0.6], 4333, 9.9, false],
+                ['Saturn', 9.45, 95, [0.9, 0.8, 0.5], 10759, 10.7, true],
+                ['Uranus', 4.0, 192, [0.6, 0.8, 0.9], 30687, -17.2, true],
+                ['Neptune', 3.88, 301, [0.3, 0.4, 0.9], 60190, 16.1, false]
+            ];
+
+            const planetsWithSpeeds = planetsData.map(([name, size, distance, color, orbitDays, rotationHours, hasRings]) => {
+                const orbitSpeed = orbitDays === 0 ? 0 : (2 * Math.PI) / ((orbitDays / 365) * EARTH_ORBIT_TIME * 60);
+                const rotationSpeed = rotationHours === 0 ? 0 : (2 * Math.PI) / ((Math.abs(rotationHours) / 24) * EARTH_DAY_TIME * 60);
+                const actualRotationSpeed = rotationHours < 0 ? -rotationSpeed : rotationSpeed; // Handle retrograde
+                
+                return [name, size, distance, color, orbitSpeed, actualRotationSpeed, hasRings];
+            });
+
+            const planets = [];
+
+            planetsWithSpeeds.forEach(([name, size, distance, color, orbitSpeed, rotationSpeed, hasRings], index) => {
+
+                if (distance > 0) {
+                    const orbitPoints = [];
+                    for (let i = 0; i <= 128; i++) {
+                        const angle = (i / 128) * Math.PI * 2;
+                        orbitPoints.push(new BABYLON.Vector3(
+                            distance * Math.cos(angle),
+                            0,
+                            distance * Math.sin(angle)
+                        ));
+                    }
+                    const orbit = BABYLON.MeshBuilder.CreateLines(name + "Orbit", {
+                        points: orbitPoints
+                    }, scene);
+                    orbit.color = new BABYLON.Color3(0.3, 0.3, 0.5);
+                    orbit.alpha = 0.3;
+                    orbit.parent = solarSystem;
+                }
+
+                const planet = BABYLON.MeshBuilder.CreateSphere(name, {
+                    diameter: size,
+                    segments: name === 'Sun' ? 32 : 24
+                }, scene);
+                planet.position.x = distance;
+
+                const planetMaterial = new BABYLON.PBRMaterial(name + "Mat", scene);
+                
+                if (name === 'Sun') {
+
+                    planetMaterial.emissiveColor = new BABYLON.Color3(color[0], color[1], color[2]);
+                    planetMaterial.disableLighting = true;
+                    planetMaterial.emissiveIntensity = 2;
+                    
+                    let pulse = 0;
+                    scene.registerBeforeRender(() => {
+                        pulse += 0.005;
+                        const scale = 1 + Math.sin(pulse) * 0.02;
+                        planet.scaling = new BABYLON.Vector3(scale, scale, scale);
+                    });
+                } else {
+
+                    planetMaterial.albedoColor = new BABYLON.Color3(color[0], color[1], color[2]);
+                    
+
+                    if (name === 'Mercury' || name === 'Mars') {
+
+                        planetMaterial.metallic = 0.1;
+                        planetMaterial.roughness = 0.9;
+                        planetMaterial.bumpTexture = createProceduralBumpTexture(name, scene);
+                    } else if (name === 'Venus' || name === 'Earth') {
+
+                        planetMaterial.metallic = 0.0;
+                        planetMaterial.roughness = 0.6;
+                        if (name === 'Earth') {
+                            planetMaterial.emissiveColor = new BABYLON.Color3(0.05, 0.1, 0.15);
+                            planetMaterial.emissiveIntensity = 0.2;
+                        }
+                    } else {
+
+                        planetMaterial.metallic = 0.0;
+                        planetMaterial.roughness = 0.4;
+                        planetMaterial.emissiveColor = new BABYLON.Color3(
+                            color[0] * 0.1,
+                            color[1] * 0.1,
+                            color[2] * 0.1
+                        );
+                        planetMaterial.emissiveIntensity = 0.3;
+                    }
+                    
+
+                    if (name === 'Earth' || name === 'Jupiter' || name === 'Saturn') {
+                        planet.receiveShadows = true;
+                        scene.shadowGenerator.addShadowCaster(planet);
+                    }
+                    
+
+                    planetMaterial.ambientColor = new BABYLON.Color3(0.05, 0.05, 0.08);
+                    planetMaterial.useAmbientOcclusionFromMetallicTextureRed = true;
+                }
+                
+                planet.material = planetMaterial;
+                planet.parent = solarSystem;
+
+
+                if (hasRings) {
+                    if (name === 'Saturn') {
+
+                        const ringData = [
+                            { innerRadius: size * 1.2, outerRadius: size * 1.5, alpha: 0.85, color: [0.95, 0.88, 0.7] }, // C Ring
+                            { innerRadius: size * 1.5, outerRadius: size * 2.0, alpha: 0.95, color: [0.98, 0.92, 0.75] }, // B Ring (brightest)
+                            { innerRadius: size * 2.0, outerRadius: size * 2.05, alpha: 0.4, color: [0.85, 0.8, 0.65] }, // Cassini Division
+                            { innerRadius: size * 2.05, outerRadius: size * 2.4, alpha: 0.75, color: [0.92, 0.85, 0.7] }, // A Ring
+                            { innerRadius: size * 2.4, outerRadius: size * 2.45, alpha: 0.3, color: [0.8, 0.75, 0.6] }  // F Ring (faint)
+                        ];
+
+                        ringData.forEach((ringInfo, index) => {
+                            const ring = BABYLON.MeshBuilder.CreateDisc(name + "Ring" + index, {
+                                radius: ringInfo.outerRadius,
+                                tessellation: 128,
+                                arc: 1
+                            }, scene);
+                            
+                            const innerHole = BABYLON.MeshBuilder.CreateDisc(name + "RingHole" + index, {
+                                radius: ringInfo.innerRadius,
+                                tessellation: 128
+                            }, scene);
+                            
+                            const ringCSG = BABYLON.CSG.FromMesh(ring);
+                            const holeCSG = BABYLON.CSG.FromMesh(innerHole);
+                            const ringWithHole = ringCSG.subtract(holeCSG);
+                            const finalRing = ringWithHole.toMesh(name + "FinalRing" + index, null, scene);
+                            
+                            ring.dispose();
+                            innerHole.dispose();
+                            
+                            finalRing.rotation.x = Math.PI / 2;
+                            finalRing.rotation.y = 0.05;
+                            finalRing.position = planet.position.clone();
+                            
+                            const ringMaterial = new BABYLON.PBRMaterial(name + "RingMat" + index, scene);
+                            ringMaterial.albedoColor = new BABYLON.Color3(
+                                ringInfo.color[0],
+                                ringInfo.color[1],
+                                ringInfo.color[2]
+                            );
+                            ringMaterial.metallic = 0.1;
+                            ringMaterial.roughness = 0.8;
+                            ringMaterial.alpha = ringInfo.alpha;
+                            ringMaterial.alphaMode = BABYLON.Engine.ALPHA_COMBINE;
+                            ringMaterial.backFaceCulling = false;
+                            ringMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHABLEND;
+                            ringMaterial.emissiveColor = new BABYLON.Color3(
+                                ringInfo.color[0] * 0.1,
+                                ringInfo.color[1] * 0.1,
+                                ringInfo.color[2] * 0.1
+                            );
+                            finalRing.material = ringMaterial;
+                            finalRing.receiveShadows = true;
+                            finalRing.parent = solarSystem;
+                            
+                            planets.push({ mesh: planet, ring: finalRing, distance: distance, orbitSpeed: orbitSpeed, rotationSpeed: rotationSpeed, angle: Math.random() * Math.PI * 2 });
+                        });
+                    } else if (name === 'Uranus') {
+                        const uranusRings = [
+                            { radius: size * 1.8, thickness: 0.02, alpha: 0.4 },
+                            { radius: size * 1.9, thickness: 0.02, alpha: 0.35 },
+                            { radius: size * 2.0, thickness: 0.03, alpha: 0.45 },
+                            { radius: size * 2.1, thickness: 0.02, alpha: 0.3 }
+                        ];
+
+                        uranusRings.forEach((ringInfo, index) => {
+                            const ring = BABYLON.MeshBuilder.CreateTorus(name + "Ring" + index, {
+                                diameter: ringInfo.radius * 2,
+                                thickness: ringInfo.thickness,
+                                tessellation: 64
+                            }, scene);
+                            ring.rotation.x = Math.PI / 2.1;
+                            ring.rotation.y = 0.1;
+                            ring.position = planet.position.clone();
+                            
+                            const ringMaterial = new BABYLON.PBRMaterial(name + "RingMat" + index, scene);
+                            ringMaterial.albedoColor = new BABYLON.Color3(0.4, 0.45, 0.5);
+                            ringMaterial.metallic = 0.1;
+                            ringMaterial.roughness = 0.9;
+                            ringMaterial.alpha = ringInfo.alpha;
+                            ringMaterial.alphaMode = BABYLON.Engine.ALPHA_COMBINE;
+                            ringMaterial.backFaceCulling = false;
+                            ringMaterial.transparencyMode = BABYLON.PBRMaterial.PBRMATERIAL_ALPHABLEND;
+                            ring.material = ringMaterial;
+                            ring.parent = solarSystem;
+                            
+                            planets.push({ mesh: planet, ring: ring, distance: distance, orbitSpeed: orbitSpeed, rotationSpeed: rotationSpeed, angle: Math.random() * Math.PI * 2 });
+                        });
+                    }
+                } else {
+                    planets.push({ mesh: planet, ring: null, distance: distance, orbitSpeed: orbitSpeed, rotationSpeed: rotationSpeed, angle: Math.random() * Math.PI * 2 });
+                }
+            });
+
+            scene.registerBeforeRender(() => {
+                planets.forEach(planet => {
+                    if (planet.distance > 0) {
+
+                        planet.angle += planet.orbitSpeed;
+                        planet.mesh.position.x = planet.distance * Math.cos(planet.angle);
+                        planet.mesh.position.z = planet.distance * Math.sin(planet.angle);
+                        
+
+                        if (planet.ring) {
+                            planet.ring.position.x = planet.mesh.position.x;
+                            planet.ring.position.z = planet.mesh.position.z;
+                        }
+                    }
+                    
+
+                    planet.mesh.rotation.y += planet.rotationSpeed;
+                });
+            });
+
+            return { solarSystem, planets, earthMesh: planets.find(p => p.mesh.name === 'Earth') };
+        }
+
+        function createAsteroidBelt(scene) {
+            const asteroidCount = 300;
+            const innerRadius = 20;
+            const outerRadius = 45;
+            const asteroids = [];
+
+            for (let i = 0; i < asteroidCount; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const radius = innerRadius + Math.random() * (outerRadius - innerRadius);
+                const height = (Math.random() - 0.5) * 2;
+                
+                const size = 0.05 + Math.random() * 0.15;
+                
+                const asteroid = BABYLON.MeshBuilder.CreatePolyhedron('asteroid' + i, {
+                    type: Math.floor(Math.random() * 5),
+                    size: size
+                }, scene);
+                
+                asteroid.position = new BABYLON.Vector3(
+                    radius * Math.cos(angle),
+                    height,
+                    radius * Math.sin(angle)
+                );
+                
+                asteroid.rotation = new BABYLON.Vector3(
+                    Math.random() * Math.PI * 2,
+                    Math.random() * Math.PI * 2,
+                    Math.random() * Math.PI * 2
+                );
+                
+                const asteroidMaterial = new BABYLON.PBRMaterial('asteroidMat' + i, scene);
+                asteroidMaterial.albedoColor = new BABYLON.Color3(
+                    0.3 + Math.random() * 0.2,
+                    0.25 + Math.random() * 0.15,
+                    0.2 + Math.random() * 0.1
+                );
+                asteroidMaterial.metallic = 0.2;
+                asteroidMaterial.roughness = 0.95;
+                asteroidMaterial.ambientColor = new BABYLON.Color3(0.02, 0.02, 0.03);
+                asteroid.material = asteroidMaterial;
+                
+                const orbitSpeed = 0.001 + Math.random() * 0.0005;
+                const rotationSpeed = new BABYLON.Vector3(
+                    (Math.random() - 0.5) * 0.02,
+                    (Math.random() - 0.5) * 0.02,
+                    (Math.random() - 0.5) * 0.02
+                );
+                
+                asteroids.push({
+                    mesh: asteroid,
+                    angle: angle,
+                    radius: radius,
+                    height: height,
+                    orbitSpeed: orbitSpeed,
+                    rotationSpeed: rotationSpeed
+                });
+            }
+
+            scene.registerBeforeRender(() => {
+                asteroids.forEach(asteroid => {
+                    asteroid.angle += asteroid.orbitSpeed;
+                    asteroid.mesh.position.x = asteroid.radius * Math.cos(asteroid.angle);
+                    asteroid.mesh.position.z = asteroid.radius * Math.sin(asteroid.angle);
+                    asteroid.mesh.rotation.x += asteroid.rotationSpeed.x;
+                    asteroid.mesh.rotation.y += asteroid.rotationSpeed.y;
+                    asteroid.mesh.rotation.z += asteroid.rotationSpeed.z;
+                });
+            });
+
+            return asteroids;
+        }
+
+        function createProceduralBumpTexture(planetName, scene) {
+            const bumpTexture = new BABYLON.DynamicTexture('bump' + planetName, 256, scene, false);
+            const ctx = bumpTexture.getContext();
+            const imageData = ctx.createImageData(256, 256);
+            
+            for (let i = 0; i < imageData.data.length; i += 4) {
+                const noise = Math.random() * 100;
+                imageData.data[i] = noise;
+                imageData.data[i + 1] = noise;
+                imageData.data[i + 2] = noise;
+                imageData.data[i + 3] = 255;
+            }
+            
+            ctx.putImageData(imageData, 0, 0);
+            bumpTexture.update();
+            return bumpTexture;
+        }
+
+        function createGroundScene(scene) {
+            const groundGroup = new BABYLON.TransformNode('groundGroup', scene);
+            groundGroup.scaling = new BABYLON.Vector3(0, 0, 0);
+            groundGroup.position = new BABYLON.Vector3(500, 0, 0); 
+
+            const ground = BABYLON.MeshBuilder.CreateGround('ground', {
+                width: 300,
+                height: 300,
+                subdivisions: 10
+            }, scene);
+            ground.position.y = 0;
+            const groundMat = new BABYLON.PBRMaterial('groundMat', scene);
+            groundMat.albedoColor = new BABYLON.Color3(0.12, 0.18, 0.12);
+            groundMat.metallic = 0;
+            groundMat.roughness = 0.95;
+            ground.material = groundMat;
+            ground.parent = groundGroup;
+
+            for (let i = 0; i < 15; i++) {
+                const hill = BABYLON.MeshBuilder.CreateCylinder('hill' + i, {
+                    diameterTop: 4 + Math.random() * 3,
+                    diameterBottom: 8 + Math.random() * 4,
+                    height: 6 + Math.random() * 5,
+                    tessellation: 8
+                }, scene);
+                const angle = (i / 15) * Math.PI * 2;
+                const distance = 40 + Math.random() * 30;
+                hill.position.set(
+                    Math.cos(angle) * distance,
+                    3,
+                    Math.sin(angle) * distance
+                );
+                hill.scaling.y = 0.8;
+                const hillMat = new BABYLON.PBRMaterial('hillMat' + i, scene);
+                hillMat.albedoColor = new BABYLON.Color3(0.08, 0.12, 0.08);
+                hillMat.metallic = 0;
+                hillMat.roughness = 1;
+                hill.material = hillMat;
+                hill.parent = groundGroup;
+            }
+
+            for (let i = 0; i < 50; i++) {
+                const treeGroup = new BABYLON.TransformNode('tree' + i, scene);
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 10 + Math.random() * 35;
+                treeGroup.position.set(
+                    Math.cos(angle) * distance,
+                    0,
+                    Math.sin(angle) * distance
+                );
+                treeGroup.rotation.y = Math.random() * Math.PI * 2;
+                treeGroup.parent = groundGroup;
+
+                const treeHeight = 2.5 + Math.random() * 2;
+                const trunkHeight = treeHeight * 0.4;
+
+                const trunk = BABYLON.MeshBuilder.CreateCylinder('trunk' + i, {
+                    diameter: 0.3 + Math.random() * 0.2,
+                    height: trunkHeight,
+                    tessellation: 6
+                }, scene);
+                trunk.position.y = trunkHeight / 2;
+                const trunkMat = new BABYLON.PBRMaterial('trunkMat', scene);
+                trunkMat.albedoColor = new BABYLON.Color3(0.18, 0.14, 0.1);
+                trunkMat.metallic = 0;
+                trunkMat.roughness = 0.9;
+                trunk.material = trunkMat;
+                trunk.parent = treeGroup;
+
+                for (let j = 0; j < 3; j++) {
+                    const leaves = BABYLON.MeshBuilder.CreateCylinder('leaves' + i + '_' + j, {
+                        diameterTop: 0.1,
+                        diameterBottom: 1.8 - j * 0.3,
+                        height: 1.2,
+                        tessellation: 6
+                    }, scene);
+                    leaves.position.y = trunkHeight + 0.6 + j * 0.8;
+                    const leavesMat = new BABYLON.PBRMaterial('leavesMat', scene);
+                    leavesMat.albedoColor = new BABYLON.Color3(0.08, 0.25, 0.12);
+                    leavesMat.metallic = 0;
+                    leavesMat.roughness = 0.9;
+                    leaves.material = leavesMat;
+                    leaves.parent = treeGroup;
+                }
+            }
+
+            const skyDome = BABYLON.MeshBuilder.CreateSphere('skyDome', {
+                diameter: 250,
+                segments: 32
+            }, scene);
+            skyDome.position.y = 0;
+            const skyMat = new BABYLON.StandardMaterial('skyMat', scene);
+            skyMat.emissiveColor = new BABYLON.Color3(0.005, 0.005, 0.02);
+            skyMat.backFaceCulling = false;
+            skyMat.disableLighting = true;
+            skyDome.material = skyMat;
+            skyDome.parent = groundGroup;
+
+            for (let i = 0; i < 300; i++) {
+                const star = BABYLON.MeshBuilder.CreateSphere('skyStar' + i, {
+                    diameter: 0.15 + Math.random() * 0.25,
+                    segments: 4
+                }, scene);
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.random() * Math.PI / 2;
+                star.position.set(
+                    120 * Math.sin(phi) * Math.cos(theta),
+                    120 * Math.cos(phi),
+                    120 * Math.sin(phi) * Math.sin(theta)
+                );
+                const starMat = new BABYLON.StandardMaterial('skyStarMat' + i, scene);
+                const brightness = 0.7 + Math.random() * 0.3;
+                starMat.emissiveColor = new BABYLON.Color3(brightness, brightness, brightness * 0.95);
+                starMat.disableLighting = true;
+                star.material = starMat;
+                star.parent = groundGroup;
+
+                const offset = Math.random() * Math.PI * 2;
+                const speed = 0.001 + Math.random() * 0.002;
+                scene.registerBeforeRender(() => {
+                    if (currentSection === 'about') {
+                        const twinkle = 0.6 + Math.sin(Date.now() * speed + offset) * 0.4;
+                        starMat.emissiveColor.scaleInPlace(twinkle / starMat.emissiveColor.r);
+                    }
+                });
+            }
+
+            const orionStars = [
+                { name: 'Betelgeuse', az: 0.3, alt: 0.8, size: 0.4, color: [1, 0.7, 0.5] },
+                { name: 'Rigel', az: 0.5, alt: 0.6, size: 0.35, color: [0.7, 0.8, 1] },
+                { name: 'Bellatrix', az: 0.2, alt: 0.75, size: 0.25, color: [0.9, 0.9, 1] },
+                { name: 'Alnilam', az: 0.35, alt: 0.68, size: 0.3, color: [0.9, 0.95, 1] },
+                { name: 'Alnitak', az: 0.32, alt: 0.66, size: 0.25, color: [0.9, 0.95, 1] },
+                { name: 'Mintaka', az: 0.38, alt: 0.67, size: 0.25, color: [0.9, 0.95, 1] },
+                { name: 'Saiph', az: 0.45, alt: 0.58, size: 0.25, color: [0.8, 0.85, 1] }
+            ];
+
+            orionStars.forEach(starData => {
+                const star = BABYLON.MeshBuilder.CreateSphere('constellation_' + starData.name, {
+                    diameter: starData.size,
+                    segments: 8
+                }, scene);
+                const theta = starData.az * Math.PI * 2;
+                const phi = starData.alt * Math.PI / 2;
+                star.position.set(
+                    115 * Math.sin(phi) * Math.cos(theta),
+                    115 * Math.cos(phi),
+                    115 * Math.sin(phi) * Math.sin(theta)
+                );
+                const starMat = new BABYLON.StandardMaterial('constellation_mat_' + starData.name, scene);
+                starMat.emissiveColor = new BABYLON.Color3(starData.color[0], starData.color[1], starData.color[2]);
+                starMat.disableLighting = true;
+                star.material = starMat;
+                star.parent = groundGroup;
+
+                const glowLayer = new BABYLON.GlowLayer('glow_' + starData.name, scene);
+                glowLayer.addIncludedOnlyMesh(star);
+                glowLayer.intensity = 0.8;
+            });
+
+            const moon = BABYLON.MeshBuilder.CreateSphere('moon', {
+                diameter: 8,
+                segments: 32
+            }, scene);
+            moon.position.set(30, 50, -50);
+            const moonMat = new BABYLON.StandardMaterial('moonMat', scene);
+            moonMat.emissiveColor = new BABYLON.Color3(0.95, 0.95, 0.85);
+            moonMat.disableLighting = true;
+            moon.material = moonMat;
+            moon.parent = groundGroup;
+
+            const moonGlow = new BABYLON.GlowLayer('moonGlow', scene);
+            moonGlow.addIncludedOnlyMesh(moon);
+            moonGlow.intensity = 1.2;
+
+            const campsiteGroup = new BABYLON.TransformNode('campsite', scene);
+            campsiteGroup.position.set(0, 0, 0);
+            campsiteGroup.parent = groundGroup;
+
+            const fireGroup = new BABYLON.TransformNode('fire', scene);
+            fireGroup.position.set(2, 0, 1);
+            fireGroup.parent = campsiteGroup;
+
+            for (let i = 0; i < 8; i++) {
+                const stone = BABYLON.MeshBuilder.CreateBox('stone' + i, {
+                    width: 0.3 + Math.random() * 0.2,
+                    height: 0.2 + Math.random() * 0.1,
+                    depth: 0.25 + Math.random() * 0.15
+                }, scene);
+                const angle = (i / 8) * Math.PI * 2;
+                stone.position.set(
+                    Math.cos(angle) * 0.8,
+                    0.1,
+                    Math.sin(angle) * 0.8
+                );
+                stone.rotation.y = Math.random() * Math.PI;
+                const stoneMat = new BABYLON.PBRMaterial('stoneMat' + i, scene);
+                stoneMat.albedoColor = new BABYLON.Color3(0.3, 0.3, 0.35);
+                stoneMat.metallic = 0;
+                stoneMat.roughness = 0.9;
+                stone.material = stoneMat;
+                stone.parent = fireGroup;
+            }
+
+            for (let i = 0; i < 4; i++) {
+                const log = BABYLON.MeshBuilder.CreateCylinder('log' + i, {
+                    diameter: 0.15,
+                    height: 1.2,
+                    tessellation: 6
+                }, scene);
+                const angle = (i / 4) * Math.PI * 2;
+                log.position.set(
+                    Math.cos(angle) * 0.3,
+                    0.15,
+                    Math.sin(angle) * 0.3
+                );
+                log.rotation.set(Math.PI / 2, angle, 0.3);
+                const logMat = new BABYLON.PBRMaterial('logMat', scene);
+                logMat.albedoColor = new BABYLON.Color3(0.2, 0.15, 0.1);
+                logMat.metallic = 0;
+                logMat.roughness = 0.8;
+                log.material = logMat;
+                log.parent = fireGroup;
+            }
+
+            const flame = BABYLON.MeshBuilder.CreateCylinder('flame', {
+                diameterTop: 0.2,
+                diameterBottom: 0.4,
+                height: 0.8,
+                tessellation: 6
+            }, scene);
+            flame.position.y = 0.5;
+            const flameMat = new BABYLON.StandardMaterial('flameMat', scene);
+            flameMat.emissiveColor = new BABYLON.Color3(1, 0.5, 0);
+            flameMat.disableLighting = true;
+            flame.material = flameMat;
+            flame.parent = fireGroup;
+
+            const fireLight = new BABYLON.PointLight('fireLight', new BABYLON.Vector3(2, 1, 1), scene);
+            fireLight.diffuse = new BABYLON.Color3(1, 0.6, 0.2);
+            fireLight.intensity = 3;
+            fireLight.range = 15;
+            fireLight.parent = groundGroup;
+
+            scene.registerBeforeRender(() => {
+                if (currentSection === 'about') {
+                    const flicker = 0.8 + Math.sin(Date.now() * 0.005) * 0.2 + Math.random() * 0.1;
+                    fireLight.intensity = 2.5 + flicker;
+                    flame.scaling.y = 0.8 + flicker * 0.3;
+                    flameMat.emissiveColor = new BABYLON.Color3(1, 0.4 + flicker * 0.2, 0);
+                }
+            });
+
+            const tentGroup = new BABYLON.TransformNode('tent', scene);
+            tentGroup.position.set(-3, 0, -2);
+            tentGroup.rotation.y = 0.5;
+            tentGroup.parent = campsiteGroup;
+
+            const tent1 = BABYLON.MeshBuilder.CreateCylinder('tent1', {
+                diameterTop: 0.1,
+                diameterBottom: 2,
+                height: 1.8,
+                tessellation: 3
+            }, scene);
+            tent1.position.y = 0.9;
+            tent1.rotation.y = Math.PI / 6;
+            const tentMat = new BABYLON.PBRMaterial('tentMat', scene);
+            tentMat.albedoColor = new BABYLON.Color3(0.4, 0.5, 0.3);
+            tentMat.metallic = 0;
+            tentMat.roughness = 0.9;
+            tent1.material = tentMat;
+            tent1.parent = tentGroup;
+
+            const flap = BABYLON.MeshBuilder.CreatePlane('flap', { width: 0.8, height: 0.8 }, scene);
+            flap.position.set(0, 0.5, 0.85);
+            const flapMat = new BABYLON.PBRMaterial('flapMat', scene);
+            flapMat.albedoColor = new BABYLON.Color3(0.35, 0.45, 0.25);
+            flapMat.metallic = 0;
+            flapMat.roughness = 0.9;
+            flap.material = flapMat;
+            flap.parent = tentGroup;
+
+            const backpack = BABYLON.MeshBuilder.CreateBox('backpack', {
+                width: 0.5,
+                height: 0.7,
+                depth: 0.3
+            }, scene);
+            backpack.position.set(3.5, 0.35, -1);
+            const backpackMat = new BABYLON.PBRMaterial('backpackMat', scene);
+            backpackMat.albedoColor = new BABYLON.Color3(0.5, 0.3, 0.2);
+            backpackMat.metallic = 0;
+            backpackMat.roughness = 0.8;
+            backpack.material = backpackMat;
+            backpack.parent = campsiteGroup;
+
+            const sleepingBag = BABYLON.MeshBuilder.CreateCylinder('sleepingBag', {
+                diameter: 0.8,
+                height: 2,
+                tessellation: 8
+            }, scene);
+            sleepingBag.position.set(-2, 0.2, -3);
+            sleepingBag.rotation.set(Math.PI / 2, 0, 0.3);
+            const bagMat = new BABYLON.PBRMaterial('bagMat', scene);
+            bagMat.albedoColor = new BABYLON.Color3(0.6, 0.2, 0.2);
+            bagMat.metallic = 0;
+            bagMat.roughness = 0.7;
+            sleepingBag.material = bagMat;
+            sleepingBag.parent = campsiteGroup;
+
+            const character = new BABYLON.TransformNode('character', scene);
+            character.position.set(-1, 0, 3);
+            character.parent = groundGroup;
+
+            const head = BABYLON.MeshBuilder.CreateBox('head', { width: 0.6, height: 0.6, depth: 0.6 }, scene);
+            head.position.y = 2.4;
+            head.parent = character;
+
+            const body = BABYLON.MeshBuilder.CreateBox('body', { width: 0.7, height: 1, depth: 0.5 }, scene);
+            body.position.y = 1.5;
+            body.parent = character;
+
+            const leftArm = BABYLON.MeshBuilder.CreateBox('leftArm', { width: 0.3, height: 0.9, depth: 0.3 }, scene);
+            leftArm.position.set(-0.5, 1.5, 0);
+            leftArm.rotation.z = 0.3;
+            leftArm.parent = character;
+
+            const rightArm = BABYLON.MeshBuilder.CreateBox('rightArm', { width: 0.3, height: 0.9, depth: 0.3 }, scene);
+            rightArm.position.set(0.5, 1.6, 0);
+            rightArm.rotation.z = -0.5;
+            rightArm.rotation.x = 0.3;
+            rightArm.parent = character;
+
+            const leftLeg = BABYLON.MeshBuilder.CreateBox('leftLeg', { width: 0.3, height: 1, depth: 0.3 }, scene);
+            leftLeg.position.set(-0.2, 0.5, 0);
+            leftLeg.parent = character;
+
+            const rightLeg = BABYLON.MeshBuilder.CreateBox('rightLeg', { width: 0.3, height: 1, depth: 0.3 }, scene);
+            rightLeg.position.set(0.2, 0.5, 0);
+            rightLeg.parent = character;
+
+            const charMat = new BABYLON.PBRMaterial('charMat', scene);
+            charMat.albedoColor = new BABYLON.Color3(0.3, 0.5, 0.8);
+            charMat.metallic = 0;
+            charMat.roughness = 0.8;
+            [head, body, leftArm, rightArm, leftLeg, rightLeg].forEach(part => part.material = charMat);
+
+            const telescope = new BABYLON.TransformNode('telescope', scene);
+            telescope.position.set(0.5, 0, 0.5);
+            telescope.parent = groundGroup;
+
+            const teleBase = BABYLON.MeshBuilder.CreateCylinder('teleBase', { 
+                diameterTop: 0.5, 
+                diameterBottom: 0.6, 
+                height: 0.15, 
+                tessellation: 12 
+            }, scene);
+            teleBase.position.y = 0.08;
+            const baseMat = new BABYLON.PBRMaterial('baseMat', scene);
+            baseMat.albedoColor = new BABYLON.Color3(0.15, 0.15, 0.18);
+            baseMat.metallic = 0.7;
+            baseMat.roughness = 0.3;
+            teleBase.material = baseMat;
+            teleBase.parent = telescope;
+
+            for (let i = 0; i < 3; i++) {
+                const angle = (i / 3) * Math.PI * 2;
+                
+                const legUpper = BABYLON.MeshBuilder.CreateCylinder('legUpper' + i, { 
+                    diameter: 0.08, 
+                    height: 0.9, 
+                    tessellation: 8 
+                }, scene);
+                legUpper.position.set(
+                    Math.cos(angle) * 0.25, 
+                    0.45, 
+                    Math.sin(angle) * 0.25
+                );
+                legUpper.rotation.set(
+                    Math.cos(angle) * 0.5, 
+                    0, 
+                    Math.sin(angle) * 0.5
+                );
+                legUpper.material = baseMat;
+                legUpper.parent = telescope;
+
+                const legLower = BABYLON.MeshBuilder.CreateCylinder('legLower' + i, { 
+                    diameter: 0.06, 
+                    height: 0.5, 
+                    tessellation: 8 
+                }, scene);
+                legLower.position.set(
+                    Math.cos(angle) * 0.55, 
+                    0.25, 
+                    Math.sin(angle) * 0.55
+                );
+                legLower.rotation.set(
+                    Math.cos(angle) * 0.7, 
+                    0, 
+                    Math.sin(angle) * 0.7
+                );
+                legLower.material = baseMat;
+                legLower.parent = telescope;
+
+                const foot = BABYLON.MeshBuilder.CreateCylinder('foot' + i, { 
+                    diameter: 0.12, 
+                    height: 0.05, 
+                    tessellation: 8 
+                }, scene);
+                foot.position.set(
+                    Math.cos(angle) * 0.75, 
+                    0.03, 
+                    Math.sin(angle) * 0.75
+                );
+                const footMat = new BABYLON.PBRMaterial('footMat', scene);
+                footMat.albedoColor = new BABYLON.Color3(0.1, 0.1, 0.12);
+                footMat.metallic = 0.3;
+                footMat.roughness = 0.8;
+                foot.material = footMat;
+                foot.parent = telescope;
+            }
+
+            const mount = BABYLON.MeshBuilder.CreateSphere('mount', { 
+                diameter: 0.25, 
+                segments: 16 
+            }, scene);
+            mount.position.y = 1.1;
+            mount.material = baseMat;
+            mount.parent = telescope;
+
+            const teleTube = BABYLON.MeshBuilder.CreateCylinder('teleTube', { 
+                diameterTop: 0.18, 
+                diameterBottom: 0.22, 
+                height: 1.8, 
+                tessellation: 16 
+            }, scene);
+            teleTube.position.set(0, 1.35, 0);
+            teleTube.rotation.x = Math.PI / 4;
+            const tubeMat = new BABYLON.PBRMaterial('tubeMat', scene);
+            tubeMat.albedoColor = new BABYLON.Color3(0.95, 0.95, 0.95);
+            tubeMat.metallic = 0.8;
+            tubeMat.roughness = 0.2;
+            teleTube.material = tubeMat;
+            teleTube.parent = telescope;
+
+            const lensHousing = BABYLON.MeshBuilder.CreateCylinder('lensHousing', { 
+                diameter: 0.24, 
+                height: 0.15, 
+                tessellation: 16 
+            }, scene);
+            lensHousing.position.set(0, 0.98, 0);
+            lensHousing.rotation.x = Math.PI / 2;
+            lensHousing.material = baseMat;
+            lensHousing.parent = teleTube;
+
+            const lens = BABYLON.MeshBuilder.CreateCylinder('lens', { 
+                diameter: 0.2, 
+                height: 0.02, 
+                tessellation: 16 
+            }, scene);
+            lens.position.set(0, 0.98, 0);
+            lens.rotation.x = Math.PI / 2;
+            const lensMat = new BABYLON.PBRMaterial('lensMat', scene);
+            lensMat.albedoColor = new BABYLON.Color3(0.8, 0.9, 1);
+            lensMat.metallic = 0.9;
+            lensMat.roughness = 0.05;
+            lensMat.alpha = 0.3;
+            lens.material = lensMat;
+            lens.parent = teleTube;
+
+            const eyepieceMount = BABYLON.MeshBuilder.CreateCylinder('eyepieceMount', { 
+                diameter: 0.15, 
+                height: 0.12, 
+                tessellation: 12 
+            }, scene);
+            eyepieceMount.position.set(0, -0.85, 0);
+            eyepieceMount.rotation.x = Math.PI / 2;
+            eyepieceMount.material = baseMat;
+            eyepieceMount.parent = teleTube;
+
+            const eyepiece = BABYLON.MeshBuilder.CreateCylinder('eyepiece', { 
+                diameter: 0.09, 
+                height: 0.25, 
+                tessellation: 12 
+            }, scene);
+            eyepiece.position.set(0, -0.85, -0.15);
+            eyepiece.rotation.x = Math.PI / 2;
+            const eyepieceMat = new BABYLON.PBRMaterial('eyepieceMat', scene);
+            eyepieceMat.albedoColor = new BABYLON.Color3(0.1, 0.1, 0.12);
+            eyepieceMat.metallic = 0.6;
+            eyepieceMat.roughness = 0.4;
+            eyepiece.material = eyepieceMat;
+            eyepiece.parent = teleTube;
+
+            for (let i = 0; i < 2; i++) {
+                const knob = BABYLON.MeshBuilder.CreateCylinder('knob' + i, { 
+                    diameter: 0.08, 
+                    height: 0.08, 
+                    tessellation: 12 
+                }, scene);
+                knob.position.set(0.15, -0.3 + i * 0.3, 0);
+                knob.rotation.z = Math.PI / 2;
+                knob.material = baseMat;
+                knob.parent = teleTube;
+            }
+
+            const finderScope = BABYLON.MeshBuilder.CreateCylinder('finderScope', { 
+                diameter: 0.05, 
+                height: 0.5, 
+                tessellation: 8 
+            }, scene);
+            finderScope.position.set(0, 0.3, 0.12);
+            finderScope.rotation.x = Math.PI / 2;
+            finderScope.material = baseMat;
+            finderScope.parent = teleTube;
+
+            const cat = new BABYLON.TransformNode('cat', scene);
+            cat.position.set(1.5, 0, -0.5);
+            cat.parent = groundGroup;
+
+            const catBody = BABYLON.MeshBuilder.CreateBox('catBody', { width: 0.5, height: 0.4, depth: 0.7 }, scene);
+            catBody.position.y = 0.3;
+            catBody.parent = cat;
+
+            const catHead = BABYLON.MeshBuilder.CreateBox('catHead', { width: 0.4, height: 0.36, depth: 0.4 }, scene);
+            catHead.position.set(0, 0.4, 0.44);
+            catHead.parent = cat;
+
+            const leftEar = BABYLON.MeshBuilder.CreateCylinder('leftEar', { diameterTop: 0.04, diameterBottom: 0.16, height: 0.24, tessellation: 3 }, scene);
+            leftEar.position.set(-0.16, 0.64, 0.44);
+            leftEar.parent = cat;
+
+            const rightEar = BABYLON.MeshBuilder.CreateCylinder('rightEar', { diameterTop: 0.04, diameterBottom: 0.16, height: 0.24, tessellation: 3 }, scene);
+            rightEar.position.set(0.16, 0.64, 0.44);
+            rightEar.parent = cat;
+
+            for (let i = 0; i < 4; i++) {
+                const leg = BABYLON.MeshBuilder.CreateCylinder('catLeg' + i, { diameter: 0.12, height: 0.3, tessellation: 6 }, scene);
+                const x = (i % 2) === 0 ? -0.16 : 0.16;
+                const z = i < 2 ? 0.2 : -0.2;
+                leg.position.set(x, 0.15, z);
+                leg.parent = cat;
+            }
+
+            const tail = BABYLON.MeshBuilder.CreateBox('tail', { width: 0.1, height: 0.1, depth: 0.5 }, scene);
+            tail.position.set(0, 0.36, -0.44);
+            tail.rotation.x = 0.5;
+            tail.parent = cat;
+
+            const catMat = new BABYLON.PBRMaterial('catMat', scene);
+            catMat.albedoColor = new BABYLON.Color3(0.95, 0.6, 0.3);
+            catMat.metallic = 0;
+            catMat.roughness = 0.9;
+            [catBody, catHead, leftEar, rightEar, tail].forEach(part => part.material = catMat);
+
+            const groundLight = new BABYLON.HemisphericLight('groundLight', new BABYLON.Vector3(0, 1, 0), scene);
+            groundLight.intensity = 0.3;
+            groundLight.diffuse = new BABYLON.Color3(0.3, 0.3, 0.5);
+            groundLight.setEnabled(false);
+            groundLight.parent = groundGroup;
+
+            const moonLight = new BABYLON.DirectionalLight('moonLight', new BABYLON.Vector3(-1, -2, 1), scene);
+            moonLight.intensity = 0.4;
+            moonLight.diffuse = new BABYLON.Color3(0.7, 0.7, 0.9);
+            moonLight.setEnabled(false);
+            moonLight.parent = groundGroup;
+
+            let time = 0;
+            scene.registerBeforeRender(() => {
+                if (currentSection === 'about') {
+                    time += 0.01;
+                    character.position.y = Math.sin(time * 2) * 0.02;
+                    tail.rotation.y = Math.sin(time * 1.5) * 0.3;
+                    catHead.rotation.y = Math.sin(time * 0.8) * 0.2;
+                }
+            });
+
+            return { groundGroup, groundLight, moonLight };
+        }
+
+        function zoomToEarth(camera, scene, groundData, solarSystem) {
+            currentSection = 'about';
+            
+            const overlay = document.getElementById('transition-overlay');
+            
+            document.querySelector('.hero-content').classList.remove('visible');
+            
+            if (groundData.groundGroup.scaling.x === 0) {
+                const earthPlanet = solarSystem.planets.find(p => p.mesh.name === 'Earth');
+                const earthPos = earthPlanet.mesh.position.clone();
+
+                BABYLON.Animation.CreateAndStartAnimation('camTargetX', camera, 'target.x', 60, 90, camera.target.x, earthPos.x, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                BABYLON.Animation.CreateAndStartAnimation('camTargetY', camera, 'target.y', 60, 90, camera.target.y, earthPos.y, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                BABYLON.Animation.CreateAndStartAnimation('camTargetZ', camera, 'target.z', 60, 90, camera.target.z, earthPos.z, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                BABYLON.Animation.CreateAndStartAnimation('camRadius', camera, 'radius', 60, 90, camera.radius, 0.01, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                
+                setTimeout(() => {
+                    overlay.classList.add('active');
+                }, 1000);
+
+                setTimeout(() => {
+                    camera.target.set(groundData.groundGroup.position.x, groundData.groundGroup.position.y + 2, groundData.groundGroup.position.z);
+                    camera.radius = 0.01;
+                    camera.beta = Math.PI / 2.5;
+                    
+                    groundData.groundGroup.scaling.set(1, 1, 1);
+                    groundData.groundLight.setEnabled(true);
+                    groundData.moonLight.setEnabled(true);
+                    
+                    BABYLON.Animation.CreateAndStartAnimation('camRadiusOut', camera, 'radius', 60, 90, 0.01, 12, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                    
+                    overlay.classList.remove('active');
+                    
+                    setTimeout(() => {
+                        document.querySelector('.hero-content h1').innerHTML = 'About <span class=\"gradient-text\">Me</span>';
+                        document.querySelector('.hero-content .subtitle').innerHTML = `Hi! I'm a passionate developer who loves stargazing and coding.<br>When I'm not building amazing projects, you'll find me with my cat,<br>exploring the mysteries of the universe through my telescope.`;
+                        document.getElementById('learnMoreBtn').style.display = 'none';
+                        document.querySelector('.hero-content').classList.add('visible');
+                    }, 500);
+                }, 2000);
+            } else {
+                const overviewPos = new BABYLON.Vector3(groundData.groundGroup.position.x, groundData.groundGroup.position.y + 2, groundData.groundGroup.position.z);
+                
+                BABYLON.Animation.CreateAndStartAnimation('camTargetX', camera, 'target.x', 60, 90, camera.target.x, overviewPos.x, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                BABYLON.Animation.CreateAndStartAnimation('camTargetY', camera, 'target.y', 60, 90, camera.target.y, overviewPos.y, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                BABYLON.Animation.CreateAndStartAnimation('camTargetZ', camera, 'target.z', 60, 90, camera.target.z, overviewPos.z, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                BABYLON.Animation.CreateAndStartAnimation('camRadius', camera, 'radius', 60, 90, camera.radius, 12, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                BABYLON.Animation.CreateAndStartAnimation('camBeta', camera, 'beta', 60, 90, camera.beta, Math.PI / 2.5, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                BABYLON.Animation.CreateAndStartAnimation('camAlpha', camera, 'alpha', 60, 90, camera.alpha, 0, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                
+                setTimeout(() => {
+                    document.querySelector('.hero-content h1').innerHTML = 'About <span class=\"gradient-text\">Me</span>';
+                    document.querySelector('.hero-content .subtitle').innerHTML = `Hi! I'm a passionate developer who loves stargazing and coding.<br>When I'm not building amazing projects, you'll find me with my cat,<br>exploring the mysteries of the universe through my telescope.`;
+                    document.getElementById('learnMoreBtn').style.display = 'none';
+                    document.querySelector('.hero-content').classList.add('visible');
+                }, 500);
+            }
+        }
+
+        function zoomToHome(camera, groundData) {
+            currentSection = 'home';
+            
+            const overlay = document.getElementById('transition-overlay');
+            
+            document.querySelector('.hero-content').classList.remove('visible');
+            
+            groundData.groundLight.setEnabled(false);
+            groundData.moonLight.setEnabled(false);
+            
+            BABYLON.Animation.CreateAndStartAnimation('camTargetY', camera, 'target.y', 60, 90, camera.target.y, 50, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+            BABYLON.Animation.CreateAndStartAnimation('camRadius', camera, 'radius', 60, 90, camera.radius, 0.01, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+            
+            setTimeout(() => {
+                overlay.classList.add('active');
+            }, 1000);
+            
+            setTimeout(() => {
+                groundData.groundGroup.scaling.set(0, 0, 0);
+                
+                camera.target.set(0, 0, 0);
+                camera.radius = 0.01;
+                camera.beta = Math.PI / 2.5;
+                
+                BABYLON.Animation.CreateAndStartAnimation('camRadiusOut', camera, 'radius', 60, 120, 0.01, 150, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                
+                overlay.classList.remove('active');
+                
+                setTimeout(() => {
+                    document.querySelector('.hero-content h1').innerHTML = 'Providing <span class=\"gradient-text\">the best</span><br>project experience.';
+                    document.querySelector('.hero-content .subtitle').innerHTML = `I'm a Full Stack Software Engineer with experience in Website, Mobile,<br>and Software development. Check out my projects and skills.`;
+                    document.getElementById('learnMoreBtn').style.display = 'inline-block';
+                    document.querySelector('.hero-content').classList.add('visible');
+                }, 500);
+            }, 2000);
+        }
+
+        function zoomToCampfire(camera, scene, groundData) {
+            currentSection = 'skills';
+            
+            const overlay = document.getElementById('transition-overlay');
+            
+            document.querySelector('.hero-content').classList.remove('visible');
+            
+            if (groundData.groundGroup.scaling.x === 0) {
+                const earthPlanet = solarSystem.planets.find(p => p.mesh.name === 'Earth');
+                const earthPos = earthPlanet.mesh.position.clone();
+
+                BABYLON.Animation.CreateAndStartAnimation('camTargetX', camera, 'target.x', 60, 90, camera.target.x, earthPos.x, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                BABYLON.Animation.CreateAndStartAnimation('camTargetY', camera, 'target.y', 60, 90, camera.target.y, earthPos.y, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                BABYLON.Animation.CreateAndStartAnimation('camTargetZ', camera, 'target.z', 60, 90, camera.target.z, earthPos.z, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                BABYLON.Animation.CreateAndStartAnimation('camRadius', camera, 'radius', 60, 90, camera.radius, 0.01, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                
+                setTimeout(() => {
+                    overlay.classList.add('active');
+                }, 1000);
+
+                setTimeout(() => {
+                    groundData.groundGroup.scaling.set(1, 1, 1);
+                    groundData.groundLight.setEnabled(true);
+                    groundData.moonLight.setEnabled(true);
+                    
+                    const campfirePos = new BABYLON.Vector3(groundData.groundGroup.position.x + 2, groundData.groundGroup.position.y + 0.5, groundData.groundGroup.position.z + 1);
+                    camera.target.copyFrom(campfirePos);
+                    camera.radius = 0.6;
+                    camera.beta = Math.PI / 2.8;
+                    camera.alpha = -Math.PI / 4;
+                    
+                    overlay.classList.remove('active');
+                    
+                    setTimeout(() => {
+                        document.querySelector('.hero-content h1').innerHTML = 'My <span class="gradient-text">Skills</span>';
+                        document.querySelector('.hero-content .subtitle').innerHTML = `Full Stack Development | 3D Graphics | Web Technologies<br>JavaScript, TypeScript, React, Node.js, Python, Babylon.js`;
+                        document.getElementById('learnMoreBtn').style.display = 'none';
+                        document.querySelector('.hero-content').classList.add('visible');
+                    }, 500);
+                }, 2000);
+            } else {
+                const campfirePos = new BABYLON.Vector3(groundData.groundGroup.position.x + 2, groundData.groundGroup.position.y + 0.5, groundData.groundGroup.position.z + 1);
+                
+                BABYLON.Animation.CreateAndStartAnimation('camTargetX', camera, 'target.x', 60, 90, camera.target.x, campfirePos.x, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                BABYLON.Animation.CreateAndStartAnimation('camTargetY', camera, 'target.y', 60, 90, camera.target.y, campfirePos.y, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                BABYLON.Animation.CreateAndStartAnimation('camTargetZ', camera, 'target.z', 60, 90, camera.target.z, campfirePos.z, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                BABYLON.Animation.CreateAndStartAnimation('camRadius', camera, 'radius', 60, 90, camera.radius, 0.6, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                BABYLON.Animation.CreateAndStartAnimation('camBeta', camera, 'beta', 60, 90, camera.beta, Math.PI / 2.8, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                BABYLON.Animation.CreateAndStartAnimation('camAlpha', camera, 'alpha', 60, 90, camera.alpha, -Math.PI / 4, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+                
+                setTimeout(() => {
+                    document.querySelector('.hero-content h1').innerHTML = 'My <span class="gradient-text">Skills</span>';
+                    document.querySelector('.hero-content .subtitle').innerHTML = `Full Stack Development | 3D Graphics | Web Technologies<br>JavaScript, TypeScript, React, Node.js, Python, Babylon.js`;
+                    document.getElementById('learnMoreBtn').style.display = 'none';
+                    document.querySelector('.hero-content').classList.add('visible');
+                }, 500);
+            }
+        }
+
+        function createParticles(scene) {
+            const particleSystem = new BABYLON.ParticleSystem("particles", 150, scene); // Reduced from 300
+
+            const particleTexture = new BABYLON.DynamicTexture("particleTex", 32, scene); // Reduced from 64
+            const ctx = particleTexture.getContext();
+            const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+            gradient.addColorStop(0, "rgba(180, 160, 255, 1)");
+            gradient.addColorStop(0.5, "rgba(120, 100, 200, 0.5)");
+            gradient.addColorStop(1, "rgba(80, 60, 150, 0)");
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 32, 32);
+            particleTexture.update();
+
+            particleSystem.particleTexture = particleTexture;
+            particleSystem.emitter = new BABYLON.Vector3(5, 2, 0);
+            particleSystem.minEmitBox = new BABYLON.Vector3(-8, -8, -8);
+            particleSystem.maxEmitBox = new BABYLON.Vector3(8, 8, 8);
+
+            particleSystem.color1 = new BABYLON.Color4(0.7, 0.6, 1, 0.5);
+            particleSystem.color2 = new BABYLON.Color4(0.5, 0.7, 1, 0.3);
+            particleSystem.colorDead = new BABYLON.Color4(0.3, 0.4, 0.8, 0);
+
+            particleSystem.minSize = 0.1;
+            particleSystem.maxSize = 0.3;
+            particleSystem.minLifeTime = 3;
+            particleSystem.maxLifeTime = 8;
+
+            particleSystem.emitRate = 30;
+            particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_ADD;
+
+            particleSystem.gravity = new BABYLON.Vector3(0, 0, 0);
+            particleSystem.direction1 = new BABYLON.Vector3(-1, 0.5, -1);
+            particleSystem.direction2 = new BABYLON.Vector3(1, 0.5, 1);
+
+            particleSystem.minEmitPower = 0.1;
+            particleSystem.maxEmitPower = 0.3;
+            particleSystem.updateSpeed = 0.01;
+
+            particleSystem.start();
+
+            return particleSystem;
+        }
+
+        const { scene, camera, solarSystem } = createScene();
+        
+        const groundData = createGroundScene(scene);
+
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const section = link.getAttribute('href').substring(1);
+                
+                document.querySelectorAll('.nav-links a').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                
+                if (section === 'home') {
+                    zoomToHome(camera, groundData);
+                } else if (section === 'about') {
+                    zoomToEarth(camera, scene, groundData, solarSystem);
+                } else if (section === 'skills') {
+                    zoomToCampfire(camera, scene, groundData);
+                } else if (section === 'projects') {
+
+                    document.querySelector('.hero-content').classList.remove('visible');
+                    setTimeout(() => {
+                        document.querySelector('.hero-content h1').innerHTML = 'My <span class="gradient-text">Projects</span>';
+                        document.querySelector('.hero-content .subtitle').innerHTML = `Check out my portfolio:<br><a href="https://github.com/yourusername/projects" target="_blank" style="color: #667eea; text-decoration: underline;">View Projects on GitHub</a>`;
+                        document.getElementById('learnMoreBtn').style.display = 'none';
+                        document.querySelector('.hero-content').classList.add('visible');
+                    }, 300);
+                } else if (section === 'source') {
+
+                    document.querySelector('.hero-content').classList.remove('visible');
+                    setTimeout(() => {
+                        document.querySelector('.hero-content h1').innerHTML = 'Source <span class="gradient-text">Code</span>';
+                        document.querySelector('.hero-content .subtitle').innerHTML = `View the source code:<br><a href="https://github.com/yourusername/portfolio" target="_blank" style="color: #667eea; text-decoration: underline;">View on GitHub</a>`;
+                        document.getElementById('learnMoreBtn').style.display = 'none';
+                        document.querySelector('.hero-content').classList.add('visible');
+                    }, 300);
+                }
+            });
+        });
+
+
+        document.getElementById('learnMoreBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            document.querySelectorAll('.nav-links a').forEach(l => l.classList.remove('active'));
+            document.querySelector('.nav-links a[href="#about"]').classList.add('active');
+            zoomToEarth(camera, scene, groundData, solarSystem);
+        });
+
+
+        engine.runRenderLoop(() => {
+            scene.render();
+        });
+
+
+        window.addEventListener('resize', () => {
+            engine.resize();
+        });
+
+
+        let autoRotate = true;
+        canvas.addEventListener('pointerdown', () => {
+            autoRotate = false;
+        });
+    </script>
+</body>
+</html>
+
